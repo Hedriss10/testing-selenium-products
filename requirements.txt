@@ -1,0 +1,8 @@
+fastapi==0.115.12
+selenium==4.32.0
+fastapi-cli==0.0.7
+black==25.1.0
+pytest==8.3.5
+pytest-cov==6.1.1
+ruff==0.11.8
+httpx==0.28.1
