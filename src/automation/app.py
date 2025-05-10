@@ -10,23 +10,26 @@ app = FastAPI(
 )
 
 
-@app.get("/users", tags=["users"])
-async def root():
-    return {"message": "Hello World"}
+CATEGORIES = [
+    "All Categories",
+    "Apparel",
+    "Cosmetics",
+    "Electronics"
+    "Home Goods",
+]
 
 
-@app.get("/items/{item_id}", tags=["items"])
-def read_item(item_id: int, q: Union[str, None] = None):
-    if isinstance(item_id, int):
+@app.get("/scrape", tags=["scrape"])
+async def scraper_products(category: str):
+    if category.lower() not in CATEGORIES:
         return JSONResponse(
-            status_code=200,
-            content=jsonable_encoder({"item_id": item_id, "q": q}),
+            content=jsonable_encoder({"message_id": "Category not found"}), 
+            status_code=404
         )
-    else:
-        return JSONResponse(
-            status_code=400,
-            content=jsonable_encoder({"item_id": item_id, "q": q}),
-        )
+    # 1 passo mandar a cateogria para o service
+    
+    
+    return True
 
 
 if __name__ == "__main__":

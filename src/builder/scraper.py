@@ -18,7 +18,10 @@ from src.models.product import Product
 load_dotenv()
 
 URL_BASE = os.environ.get("URL")
-
+HEADLES = os.environ.get("HEADLES")
+NO_SANDBOX = os.environ.get("NO_SANDBOX")
+DISABLE_DEV_SHM_USAGE = os.environ.get("DISABLE_DEV_SHM_USAGE")
+SELENIUM_TESTING = os.environ.get("SELENIUM_TESTING")
 
 CATEGORY_ORDER = {
     "All Categories": 0,
@@ -34,21 +37,18 @@ MINIMUM_COLUMN_COUNT = 6
 
 class WebdriverManager:
     def __init__(self):
-        """
-        Inicializa o webdriver Chrome com configura es de sandbox e shm.
-        """
         options = Options()
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument(f"{HEADLES}")
+        options.add_argument(f"{NO_SANDBOX}")
+        options.add_argument(f"{DISABLE_DEV_SHM_USAGE}")
         self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 20)
-        self.logger = logging.getLogger("testing-selenium")
+        self.logger = logging.getLogger(f"{SELENIUM_TESTING}")
 
 
 class PageObject(WebdriverManager):
-    def __init__(self, category: list, products: list):
+    def __init__(self, category: list):
         self.category = category
-        self.products = products
         super().__init__()
 
     def __visibility_of_element_located_product_rows(self):
@@ -65,7 +65,7 @@ class PageObject(WebdriverManager):
             self.logger.error(f"Could not load product rows: {e}")
             return []
 
-    def select_category(self):
+    def select_category(self, products: list):
         if self.category != "All Categories":
             try:
                 self.logger.info(f"Selecting category {self.category}")
@@ -110,10 +110,7 @@ class PageObject(WebdriverManager):
                     EC.presence_of_element_located((By.ID, "product-count"))
                 ).text.strip()
             )
-            if (
-                expected_count is not None
-                and len(self.products) != expected_count
-            ):
+            if expected_count is not None and len(products) != expected_count:
                 self.logger.warning(f"Expected {expected_count} products")
         except Exception:
             expected_count = None
@@ -125,7 +122,6 @@ class PageObject(WebdriverManager):
                 EC.presence_of_element_located((By.ID, "product-count"))
             )
             expected_count = int(product_count_elem.text.strip())
-            self.logger.info(f"Products for category: {self.category}")
             return expected_count
         except Exception as e:
             self.logger.warning(f"Could not retrieve product count: {e}")
@@ -135,11 +131,13 @@ class PageObject(WebdriverManager):
         self.logger.info(f"Scraping category: {self.category}")
         self.driver.get(URL_BASE)
 
+        products = []
+
         # Wait for page to load
         self.wait.until(
             EC.presence_of_element_located((By.ID, "product-count"))
         )
-        self.select_category()
+        self.select_category(products=products)
 
         product_rows = self.__visibility_of_element_located_product_rows()
 
@@ -173,7 +171,7 @@ class PageObject(WebdriverManager):
                     link = ""
                     self.logger.warning(f"No link found for product: {title}")
 
-                self.products.append(
+                products.append(
                     Product(
                         title=title,
                         price=price,
@@ -187,10 +185,4 @@ class PageObject(WebdriverManager):
             except Exception as e:
                 self.logger.error(f"Failed to scrape product: {e}")
 
-        return self.products
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    page_object = PageObject(category="Home Goods", products=[])
-    page_object.scrape_products()
+        return products
