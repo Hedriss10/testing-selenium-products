@@ -1,30 +1,87 @@
 # src/automation/app.py
 
-from fastapi import FastAPI
+from typing import Literal
+
+from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+
+from src.execute.service import ExecuteService
 
 app = FastAPI(
     title="Scraper", description="Scraper automation api.", version="0.0.1"
 )
 
-
-CATEGORIES = [
+FILTER_ARGUMENTS_SCRAPE = [
     "All Categories",
     "Apparel",
     "Cosmetics",
-    "ElectronicsHome Goods",
+    "Electronics",
+    "Home Goods",
 ]
 
 
-@app.get("/scrape", tags=["scrape"])
-async def scraper_products(category: str):
-    if category.lower() not in CATEGORIES:
+@app.get(
+    "/scrape",
+    tags=["scrape"],
+    responses={
+        status.HTTP_200_OK: {
+            "description": "List of scraped products",
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "title": "Example Title Product",
+                            "price": 0.0,
+                            "link": "https://example.com",
+                            "stock_status": "In Stock",
+                            "stock_quantity": 30,
+                            "total": 50,
+                        }
+                    ]
+                }
+            },
+        },
+        404: {
+            "messages": [
+                {"message_id": "Category not found"},
+                {"message_id": "Product not found"},
+            ]
+        },
+        429: {"description": "No worker available"},
+    },
+)
+async def scraper_products(
+    category: Literal[
+        "All Categories", "Apparel", "Cosmetics", "Electronics", "Home Goods"
+    ],
+):
+    """Get products from category"""
+
+    if category not in FILTER_ARGUMENTS_SCRAPE:
         return JSONResponse(
             content=jsonable_encoder({"message_id": "Category not found"}),
             status_code=404,
         )
-    return True
+
+    try:
+        service = ExecuteService(category=category)
+        products = await service.run()
+
+        if not products:
+            return JSONResponse(
+                content=jsonable_encoder({"message_id": "Product not found"}),
+                status_code=404,
+            )
+
+        return JSONResponse(content=jsonable_encoder(products))
+    except RuntimeError as e:
+        if str(e) == "no_worker_available":
+            return JSONResponse(
+                content={"detail": "nenhum trabalhador disponível"},
+                status_code=429,
+            )
+        raise e
 
 
 if __name__ == "__main__":

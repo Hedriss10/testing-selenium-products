@@ -13,7 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from src.models.product import Product
+from src.models.product import CATEGORY_ORDER, Product
 
 load_dotenv()
 
@@ -22,14 +22,6 @@ HEADLES = os.environ.get("HEADLES")
 NO_SANDBOX = os.environ.get("NO_SANDBOX")
 DISABLE_DEV_SHM_USAGE = os.environ.get("DISABLE_DEV_SHM_USAGE")
 SELENIUM_TESTING = os.environ.get("SELENIUM_TESTING")
-
-CATEGORY_ORDER = {
-    "All Categories": 0,
-    "Apparel": 1,
-    "Cosmetics": 2,
-    "Electronics": 3,
-    "Home Goods": 4,
-}
 
 
 MINIMUM_COLUMN_COUNT = 6
@@ -42,7 +34,7 @@ class WebdriverManager:
         options.add_argument(f"{NO_SANDBOX}")
         options.add_argument(f"{DISABLE_DEV_SHM_USAGE}")
         self.driver = webdriver.Chrome(options=options)
-        self.wait = WebDriverWait(self.driver, 20)
+        self.wait = WebDriverWait(self.driver, 25)
         self.logger = logging.getLogger(f"{SELENIUM_TESTING}")
 
 
@@ -69,10 +61,12 @@ class PageObject(WebdriverManager):
         if self.category != "All Categories":
             try:
                 self.logger.info(f"Selecting category {self.category}")
-                dropdown = self.wait.until(
-                    EC.element_to_be_clickable((By.ID, "category-filter"))
-                )
-                dropdown.click()
+
+                self.wait.until(
+                    EC.visibility_of_element_located(
+                        (By.ID, "category-filter")
+                    )
+                ).click()
 
                 # Wait for dropdown to be visible
                 self.wait.until(
@@ -84,11 +78,11 @@ class PageObject(WebdriverManager):
                 position = CATEGORY_ORDER[self.category]
                 for _ in range(position):
                     ActionChains(self.driver).key_down(Keys.DOWN).pause(
-                        0.5
+                        1
                     ).perform()
 
                 ActionChains(self.driver).key_down(Keys.ENTER).pause(
-                    0.5
+                    1
                 ).perform()
 
                 # Wait for product table to update
@@ -138,7 +132,6 @@ class PageObject(WebdriverManager):
             EC.presence_of_element_located((By.ID, "product-count"))
         )
         self.select_category(products=products)
-
         product_rows = self.__visibility_of_element_located_product_rows()
 
         for row in product_rows:

@@ -3,49 +3,39 @@
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
-from typing import List
-
-from dotenv import load_dotenv
 
 from src.builder.scraper import PageObject
-from src.models.product import Product
 
 logging.basicConfig(level=logging.INFO)
 
-load_dotenv()
-
-
-CATEGORIES = [
-    "All Categories",
-    "Apparel",
-    "Cosmetics",
-    "Electronics",
-    "Home Goods",
-]
 
 WORK_THREAD = os.environ.get("WORK_THREAD")
 
 
-def run_scraper(category: str) -> List[Product]:
-    logging.info(f"Start scraper: {category}")
-    scraper = PageObject(category=category)
-    products = scraper.scrape_products()
-    logging.info(f"Success scraper: {category} with {len(products)}")
-    return products
+class ScrapePool:
+    def __init__(self, size: int, category: str):
+        self.size = size
+        self.category = category
+        self.page_object = PageObject(category=category)
 
+    def run_scraper(self):
+        logging.info(f"Start scraper: {self.category}")
+        products = self.page_object.scrape_products()
+        logging.info(f"Success scraper: {self.category} with {len(products)}")
+        return products
 
-def pool_with_threads(size: int = int(WORK_THREAD)):
-    with ThreadPoolExecutor(size) as executor:
-        futures = [
-            executor.submit(run_scraper, category) for category in CATEGORIES
-        ]
+    def pool_with_threads(self):
+        with ThreadPoolExecutor(self.size) as executor:
+            futures = [
+                executor.submit(self.run_scraper) for _ in range(self.size)
+            ]
+            all_products = []
+            for future in futures:
+                try:
+                    products = future.result()
+                    all_products.extend(products)
+                except Exception as e:
+                    logging.error(f"Erro there is an error: {e}")
+            return all_products
 
-        all_products = []
-        for future in futures:
-            try:
-                products = future.result()
-                all_products.extend(products)
-            except Exception as e:
-                logging.error(f"Erro there is an error: {e}")
-
-    logging.info(f"Total of products: {len(all_products)}")
+        logging.info(f"Total of products: {len(all_products)}")
