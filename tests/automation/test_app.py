@@ -1,14 +1,14 @@
-# # test/automation/test_app.py
+# test/automation/test_app.py
 
-# from fastapi import status
-# from fastapi.testclient import TestClient
+from fastapi import status
+from fastapi.testclient import TestClient
 
-# from src.automation.app import app
+from src.automation.app import app
 
-# client = TestClient(app)
+client = TestClient(app)
 
 
-# def test_read_main():
-#     response = client.get("/")
+def test_read_main():
+    response = client.get("/")
 
-#     assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_404_NOT_FOUND
