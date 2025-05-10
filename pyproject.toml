@@ -26,6 +26,7 @@ target-version = ["py312"]
 
 [tool.pytest.ini_options] # para gerar o html --cov-report=html
 testpaths = ["tests"]
+asyncio_mode = "auto"
 python_files = "test_*.py"
 python_functions = "test_*"
-addopts = "--verbose --cov=src"
+addopts = "--verbose --cov=src --cov-report=html"
