@@ -25,6 +25,7 @@ CATEGORIES = [
 
 WORK_THREAD = os.environ.get("WORK_THREAD")
 
+
 def run_scraper(category: str) -> List[Product]:
     logging.info(f"Start scraper: {category}")
     scraper = PageObject(category=category)

@@ -1,5 +1,4 @@
 # src/automation/app.py
-from typing import Union
 
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
@@ -14,8 +13,7 @@ CATEGORIES = [
     "All Categories",
     "Apparel",
     "Cosmetics",
-    "Electronics"
-    "Home Goods",
+    "ElectronicsHome Goods",
 ]
 
 
@@ -23,12 +21,9 @@ CATEGORIES = [
 async def scraper_products(category: str):
     if category.lower() not in CATEGORIES:
         return JSONResponse(
-            content=jsonable_encoder({"message_id": "Category not found"}), 
-            status_code=404
+            content=jsonable_encoder({"message_id": "Category not found"}),
+            status_code=404,
         )
-    # 1 passo mandar a cateogria para o service
-    
-    
     return True
 
 

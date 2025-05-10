@@ -186,3 +186,12 @@ class PageObject(WebdriverManager):
                 self.logger.error(f"Failed to scrape product: {e}")
 
         return products
+
+    def close(self):
+        if self.driver:
+            self.logger.info("Closed driver")
+        try:
+            self.driver.quit()
+        except Exception as e:
+            self.logger.error(f"Failed to close driver: {e}")
+        self.driver = None
