@@ -4,6 +4,7 @@ import logging
 import os
 import re
 
+import urllib3
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -22,6 +23,7 @@ HEADLES = os.environ.get("HEADLES")
 NO_SANDBOX = os.environ.get("NO_SANDBOX")
 DISABLE_DEV_SHM_USAGE = os.environ.get("DISABLE_DEV_SHM_USAGE")
 SELENIUM_TESTING = os.environ.get("SELENIUM_TESTING")
+HUB_SELENIUM = os.getenv("HUB_SELENIUM")
 
 
 MINIMUM_COLUMN_COUNT = 6
@@ -33,9 +35,14 @@ class WebdriverManager:
         options.add_argument(f"{HEADLES}")
         options.add_argument(f"{NO_SANDBOX}")
         options.add_argument(f"{DISABLE_DEV_SHM_USAGE}")
-        self.driver = webdriver.Chrome(options=options)
-        self.wait = WebDriverWait(self.driver, 25)
         self.logger = logging.getLogger(f"{SELENIUM_TESTING}")
+        self.http_client = urllib3.PoolManager(num_pools=10, maxsize=10)
+        self.driver = webdriver.Remote(
+            command_executor=HUB_SELENIUM, options=options, keep_alive=True
+        )
+        self.wait = WebDriverWait(self.driver, 25)
+        self.driver.set_page_load_timeout(30)
+        self.driver.implicitly_wait(10)
 
 
 class PageObject(WebdriverManager):
@@ -181,10 +188,11 @@ class PageObject(WebdriverManager):
         return products
 
     def close(self):
-        if self.driver:
-            self.logger.info("Closed driver")
-        try:
-            self.driver.quit()
-        except Exception as e:
-            self.logger.error(f"Failed to close driver: {e}")
-        self.driver = None
+        if self.driver is not None:
+            try:
+                self.driver.quit()
+                self.logger.info("WebDriver closed successfully")
+            except Exception as e:
+                self.logger.error(f"Failed to close WebDriver: {e}")
+            finally:
+                self.driver = None

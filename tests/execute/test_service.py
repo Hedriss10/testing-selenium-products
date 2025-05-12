@@ -1,3 +1,4 @@
+# src/execute/test_service.py
 import asyncio
 import logging
 import os
@@ -6,8 +7,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.execute.service import ExecuteService, SCRAPER_SEMAPHORE
+from src.execute.service import ExecuteService
 from src.models.product import Product
+
+WORKS_THREAD = int(os.environ.get("WORK_THREAD"))
 
 
 @pytest.mark.asyncio
@@ -20,18 +23,16 @@ async def test_execute_service_initialization():
 
         # Assert
         assert service.category == category
-        assert service.size == 4
+        assert service.size == WORKS_THREAD
         assert service.pool.category == category
-        assert service.pool.size == 4
+        assert service.pool.size == WORKS_THREAD
 
 
 @pytest.mark.asyncio
-async def test_execute_service_initialization_invalid_work_thread():
-    # Arrange
+async def test_execute_service_raises_value_error_with_invalid_work_thread():
     category = "electronics"
     with patch.dict(os.environ, {"WORK_THREAD": "invalid"}):
-        # Act & Assert
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Invalid WORK_THREAD"):
             ExecuteService(category=category)
 
 

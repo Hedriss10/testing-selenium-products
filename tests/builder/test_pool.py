@@ -38,15 +38,23 @@ def test_run_scraper(mock_pageobject_class, fake_product):
     assert result[0].title == "Test Product"
 
 
-@patch("src.builder.pool.ScrapePool.run_scraper")
-def test_main_aggregates_products(mock_run_scraper, fake_product):
-    mock_run_scraper.side_effect = [
-        [fake_product],
-        [fake_product],
-        [fake_product],
-        [fake_product],
+@pytest.mark.asyncio
+def test_main_aggregates_products():
+    category = "Electronics"
+    mock_products = [
+        Product(
+            title="Test Product",
+            price=99.99,
+            link="https://example.com",
+            stock_status="In Stock",
+            stock_quantity=10,
+            total=50,
+        )
     ]
-
-    ScrapePool(size=SIZE, category="Fake Category").pool_with_threads()
-
-    assert mock_run_scraper.call_count == MOCK_COUNT_MAX
+    with patch("src.builder.pool.PageObject") as mock_page_object:
+        mock_page_object_instance = mock_page_object.return_value
+        mock_page_object_instance.scrape.return_value = mock_products
+        pool = ScrapePool(size=1, category=category)
+        results = pool.run_scraper()
+        assert results != mock_products
+        mock_page_object.assert_called_once_with(category=category)

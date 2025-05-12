@@ -1,0 +1,23 @@
+#Arquivos e diretórios de desenvolvimento
+
+pycache/ *.pyc *.pyo *.pyd .Python *.egg-info/ dist/ build/ *.egg
+
+# Arquivos de ambiente virtual
+
+.venv/ venv/ env/ .env
+
+# Arquivos de IDE e editores
+
+.idea/ .vscode/ *.swp *.swo
+
+# Arquivos temporários e logs
+
+*.log *.tmp *.cache
+
+# Arquivos de sistema
+
+.DS_Store Thumbs.db
+
+# Arquivos de CI/CD e outros
+
+.git/ .gitignore .github/

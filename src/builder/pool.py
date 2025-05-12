@@ -1,15 +1,11 @@
 # src/builder/pool.py
 
 import logging
-import os
 from concurrent.futures import ThreadPoolExecutor
 
 from src.builder.scraper import PageObject
 
 logging.basicConfig(level=logging.INFO)
-
-
-WORK_THREAD = os.environ.get("WORK_THREAD")
 
 
 class ScrapePool:
@@ -39,3 +35,7 @@ class ScrapePool:
             return all_products
 
         logging.info(f"Total of products: {len(all_products)}")
+
+    def close(self):
+        if hasattr(self, "page_object"):
+            self.page_object.close()

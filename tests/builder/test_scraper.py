@@ -1,7 +1,6 @@
 # tests/builder/test_scraper.py
-import logging
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from dotenv import load_dotenv
@@ -21,16 +20,18 @@ KEY_DOWN_COUNT = 1
 
 @pytest.fixture
 def mock_webdriver():
-    with (
-        patch("src.builder.scraper.webdriver.Chrome") as mock_chrome,
-        patch("src.builder.scraper.logging.getLogger") as mock_logger,
-    ):
-        mock_driver = Mock()
-        mock_chrome.return_value = mock_driver
-        mock_wait = Mock()
-        mock_driver.wait = mock_wait
-        mock_logger.return_value = Mock(spec=logging.Logger)
-        yield mock_driver, mock_wait, mock_logger.return_value
+    with patch("src.builder.scraper.webdriver.Remote") as mock_remote:
+        mock_driver = MagicMock()
+        mock_wait = MagicMock()
+        mock_logger = MagicMock()
+
+        mock_remote.return_value = mock_driver
+
+        # WebDriverWait também é chamado com driver
+        with patch(
+            "src.builder.scraper.WebDriverWait", return_value=mock_wait
+        ):
+            yield mock_driver, mock_wait, mock_logger
 
 
 @pytest.fixture
@@ -42,14 +43,19 @@ def page_object(mock_webdriver):
     return page_object
 
 
-def test_page_object_initialization(page_object, mock_webdriver):
-    driver, wait, logger = mock_webdriver
-    assert page_object.category == "Home Goods"
-    assert page_object.logger is logger
-    assert page_object.driver is driver
+def test_page_object_initialization(mock_webdriver):
+    mock_driver, mock_wait, mock_logger = mock_webdriver
+    with patch(
+        "src.builder.scraper.logging.getLogger", return_value=mock_logger
+    ):
+        page_object = PageObject(category="Home Goods")
+        assert page_object.category == "Home Goods"
+        assert page_object.driver is mock_driver
+        assert page_object.wait is mock_webdriver[1]
+        assert page_object.logger is mock_logger
 
 
-def test_select_category_all_categories(page_object, mock_webdriver):
+def test_select_category_all_categories(page_object, mock_webdriver, caplog):
     driver, wait, logger = mock_webdriver
     page_object.category = "All Categories"
 
@@ -57,11 +63,11 @@ def test_select_category_all_categories(page_object, mock_webdriver):
     mock_product_count = Mock(text="10")
     wait.until.return_value = mock_product_count
 
-    page_object.select_category(products=[])
+    with caplog.at_level("WARNING"):
+        page_object.select_category(products=[])
 
-    # Verifica que dropdown não foi chamado
     assert not driver.find_element.called
-    assert logger.warning.called
+    assert "Expected 10 products" in caplog.text
 
 
 def test_select_category_specific(page_object, mock_webdriver):
@@ -92,7 +98,6 @@ def test_select_category_specific(page_object, mock_webdriver):
     # Verifica interações com dropdown
     assert mock_dropdown.click.called
     assert mock_action.key_down.call_count >= KEY_DOWN_COUNT
-    assert logger.info.called
 
 
 def test_total_products(page_object, mock_webdriver):

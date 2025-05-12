@@ -1,16 +1,15 @@
 # tests/automation/test_app.py
 
-import pytest
 import os
-from fastapi.testclient import TestClient
-from httpx import AsyncClient
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from dotenv import load_dotenv
+from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 from src.automation.app import app
 from src.models.product import Product
-
 
 load_dotenv()
 
@@ -19,6 +18,12 @@ URL = os.environ.get("URL")
 
 # Unit tests using FastAPI TestClient
 client = TestClient(app)
+
+
+STATUS_CODE_OK = 200
+STATUS_INVALID_CATEGORY = 422
+STATUS_NO_WORKER_AVAILABLE = 429
+STATUS_NOT_FOUND = 404
 
 
 def test_scrape_valid_category_success():
@@ -42,7 +47,7 @@ def test_scrape_valid_category_success():
         response = client.get(f"/scrape?category={category}")
 
         # Assert
-        assert response.status_code == 200
+        assert response.status_code == STATUS_CODE_OK
         assert response.json() == [
             {
                 "title": "Test Product",
@@ -65,20 +70,13 @@ def test_scrape_invalid_category():
     response = client.get(f"/scrape?category={category}")
 
     # Assert
-    assert response.status_code == 422
-    assert response.json() == {
-        "detail": [
-            {
-                "type": "literal_error",
-                "loc": ["query", "category"],
-                "msg": "Input should be 'All Categories', 'Apparel', 'Cosmetics', 'Electronics' or 'Home Goods'",
-                "input": "Invalid Category",
-                "ctx": {
-                    "expected": "'All Categories', 'Apparel', 'Cosmetics', 'Electronics' or 'Home Goods'"
-                },
-            }
-        ]
-    }
+    assert response.status_code == STATUS_INVALID_CATEGORY
+    body = response.json()
+    assert body["detail"][0]["type"] == "literal_error"
+    assert body["detail"][0]["loc"] == ["query", "category"]
+    assert body["detail"][0]["input"] == "Invalid Category"
+    assert "All Categories" in body["detail"][0]["msg"]
+    assert "Apparel" in body["detail"][0]["msg"]
 
 
 def test_scrape_no_products():
@@ -92,7 +90,7 @@ def test_scrape_no_products():
         response = client.get(f"/scrape?category={category}")
 
         # Assert
-        assert response.status_code == 404
+        assert response.status_code == STATUS_NOT_FOUND
         assert response.json() == {"message_id": "Product not found"}
         mock_service.assert_called_once_with(category=category)
         mock_service_instance.run.assert_awaited_once()
@@ -111,8 +109,10 @@ def test_scrape_no_worker_available():
         response = client.get(f"/scrape?category={category}")
 
         # Assert
-        assert response.status_code == 429
-        assert response.json() == {"detail": "nenhum trabalhador disponível"}
+        assert response.status_code == STATUS_NO_WORKER_AVAILABLE
+        body = response.json()
+        assert "detail" in body
+        assert "no worker available" in body["detail"].lower()
         mock_service.assert_called_once_with(category=category)
         mock_service_instance.run.assert_awaited_once()
 
@@ -157,7 +157,7 @@ async def test_scrape_integration_valid_category():
             response = await client.get(f"/scrape?category={category}")
 
         # Assert
-        assert response.status_code == 200
+        assert response.status_code == STATUS_CODE_OK
         assert response.json() == [
             {
                 "title": "Test Product",

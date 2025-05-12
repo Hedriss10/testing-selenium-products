@@ -40,3 +40,7 @@ class ExecuteService:
                 )
         finally:
             SCRAPER_SEMAPHORE.release()
+
+    def close(self):
+        logging.info("Closing ExecuteService")
+        self.pool.close()

@@ -64,8 +64,9 @@ async def scraper_products(
             status_code=404,
         )
 
+    service = ExecuteService(category=category)
+
     try:
-        service = ExecuteService(category=category)
         products = await service.run()
 
         if not products:
@@ -78,10 +79,13 @@ async def scraper_products(
     except RuntimeError as e:
         if str(e) == "no_worker_available":
             return JSONResponse(
-                content={"detail": "nenhum trabalhador disponível"},
+                content={"detail": "no worker available"},
                 status_code=429,
             )
         raise e
+
+    finally:
+        service.close()
 
 
 if __name__ == "__main__":

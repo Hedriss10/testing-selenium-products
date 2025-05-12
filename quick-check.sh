@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# 1. Build & start
+docker compose up -d --build
+sleep 5
+
+# 2. Happy path
+curl -s 'http://localhost:8000/scrape?category=Apparel' | jq length
+
+# 3. Lint & tests
+docker compose exec api pytest -q
+docker compose exec api ruff check .
+
+# 4. Shutdown
+docker compose down
