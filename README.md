@@ -16,6 +16,14 @@ Ao clocar o projeto, é necessario criar uma `venv` que é o ambiente virual do 
 ```sh
 python3 -m venv .venv
 ```
+Instalando as dependências com o gerenciador `pip`
+
+```sh
+pip install -r requirements.txt
+```
+Importante lembrar que, é necessário ter o `Python` instalado na sua máquina local, para que explore mais profundo a construção do `scraper`, e rodar o projeto localmente, mas utilizando `Docker`, já é o necessário mas se não pode instalar no link abaixo.
+
+<a href="https://www.python.org/">Link do Python</a>
 
 
 #### **Environments**
