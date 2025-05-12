@@ -2,10 +2,14 @@
 
 # 1. Build & start
 docker compose up -d --build
-sleep 5
+
+sleep 10
+
 
 # 2. Happy path
-curl -s 'http://localhost:8000/scrape?category=Apparel' | jq length
+curl -s 'http://localhost:8000/scrape?category=Apparel'
+
+sleep 10
 
 # 3. Lint & tests
 docker compose exec api pytest -q
