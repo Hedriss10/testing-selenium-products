@@ -9,7 +9,7 @@ Este projeto foi desenvolvido como parte de um teste técnico para demonstrar co
 
 ### Como rodar esse projeto?
 
-#### .venv
+#### Ambiente virtual
 
 Ao clocar o projeto, é necessario criar uma `venv` que é o ambiente virual do `Python`, segue o comando, lembrando que o `namespace` fica da sua preferência:
 
