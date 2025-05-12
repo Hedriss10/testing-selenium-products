@@ -28,7 +28,7 @@ Importante lembrar que, é necessário ter o `Python` instalado na sua máquina 
 
 #### **Environments**
 
-Ao clonar o projeto, é necessário criar um arquivo `.env` no diretório principal. Abaixo estão as variáveis de ambiente utilizadas no projeto:
+Ao clonar o projeto, é necessário criar um arquivo `.env` no diretório principal para utilizar tanto `quick-check.sh` ou localmente. Abaixo estão as variáveis de ambiente utilizadas no projeto:
 
 ```sh
 # URL do site de teste
