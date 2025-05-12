@@ -56,6 +56,7 @@ Foi disponibilizado o script `quick-check.sh` para execução completa do projet
 * Build com Docker,
 * Extração de dados,
 * Execução dos testes e lint do projeto.
+* Remoção dos builds em Docker
 
 ```bash
 ./quick-check.sh
