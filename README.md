@@ -9,6 +9,15 @@ Este projeto foi desenvolvido como parte de um teste técnico para demonstrar co
 
 ### Como rodar esse projeto?
 
+#### .venv
+
+Ao clocar o projeto, é necessario criar uma `venv` que é o ambiente virual do `Python`, segue o comando, lembrando que o `namespace` fica da sua preferência:
+
+```sh
+python3 -m venv .venv
+```
+
+
 #### **Environments**
 
 Ao clonar o projeto, é necessário criar um arquivo `.env` no diretório principal. Abaixo estão as variáveis de ambiente utilizadas no projeto:
