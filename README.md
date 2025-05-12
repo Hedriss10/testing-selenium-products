@@ -60,19 +60,21 @@ curl -s 'http://localhost:8000/scrape?category=Apparel'
 
 Os testes unitários foram implementados com cobertura superior a **70%**, garantindo a confiabilidade do `scraper`.
 
-```bash
-File	                    statements	missing	excluded	coverage
-src/__init__.py	                0	        0	        0	      100%
-src/automation/__init__.py	    0	        0	        0	      100%
-src/automation/app.py	        25	        3	        0	       88%
-src/builder/__init__.py	        0	        0	        0	      100%
-src/builder/pool.py	            29	       13	        0	       55%
-src/builder/scraper.py	       111	       20	        0	       82%
-src/execute/__init__.py	        0	        0	        0	      100%
-src/execute/service.py	        31	       15	        0	       52%
-src/models/__init__.py	        0	        0	        0	      100%
-src/models/product.py	        9	        0	        0	      100%
-**Total**	                  **205**	    **51**	    **0**	   **75%**
+```textplain
+File                          statements   missing   excluded   coverage
+---------------------------   ----------   -------   --------   --------
+src/__init__.py                      0         0          0       100%
+src/automation/__init__.py          0         0          0       100%
+src/automation/app.py              25         3          0        88%
+src/builder/__init__.py             0         0          0       100%
+src/builder/pool.py                29        13          0        55%
+src/builder/scraper.py            111        20          0        82%
+src/execute/__init__.py             0         0          0       100%
+src/execute/service.py             31        15          0        52%
+src/models/__init__.py              0         0          0       100%
+src/models/product.py               9         0          0       100%
+---------------------------   ----------   -------   --------   --------
+TOTAL                             205        51          0        75%
 
 coverage.py v7.8.0, created at 2025-05-12 03:29 -0300
 ```
